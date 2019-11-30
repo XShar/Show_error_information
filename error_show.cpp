@@ -18,67 +18,67 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 	switch (uMsg)
 	{
-		case WM_CLOSE: ExitProcess(0);
-		case WM_COMMAND:
+	case WM_CLOSE: ExitProcess(0);
+	case WM_COMMAND:
+	{
+		switch (wParam)
 		{
-			switch (wParam)
-			{
-				case IDC_BUTTON1:
-				{
-					// получаем код ошибки
-					DWORD dwError = GetDlgItemInt(hwndDlg, IDC_EDIT1, NULL, FALSE);
-					HLOCAL hlocal = NULL;
-					
-					// Мы ищем сообщения Windows, поэтому используем системные 
-					// региональные параметры по умолчанию 
-					DWORD systemLocale = MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL);
+		case IDC_BUTTON1:
+		{
+			// получаем код ошибки
+			DWORD dwError = GetDlgItemInt(hwndDlg, IDC_EDIT1, NULL, FALSE);
+			HLOCAL hlocal = NULL;
 
-					// получаем описание ошибки по коду
-					BOOL fOk = FormatMessage(
-						FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
-						NULL,
+			// Мы ищем сообщения Windows, поэтому используем системные 
+			// региональные параметры по умолчанию 
+			DWORD systemLocale = MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL);
+
+			// получаем описание ошибки по коду
+			BOOL fOk = FormatMessage(
+				FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
+				NULL,
+				dwError,
+				systemLocale,
+				(PTSTR)& hlocal,
+				0,
+				NULL);
+
+			if (!fOk)
+			{
+				// Это ошибка, связанная с сетью ? 
+				HMODULE hDll = LoadLibraryEx(
+					TEXT("netmsg.dll"),
+					NULL,
+					DONT_RESOLVE_DLL_REFERENCES);
+
+				if (hDll != NULL)
+				{
+					FormatMessage(
+						FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
+						hDll,
 						dwError,
-						systemLocale,
+						MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
 						(PTSTR)& hlocal,
 						0,
 						NULL);
+					FreeLibrary(hDll);
+				}
+			}
 
-					if (!fOk)
-					{
-						// Это ошибка, связанная с сетью ? 
-						HMODULE hDll = LoadLibraryEx(
-							TEXT("netmsg.dll"),
-							NULL,
-							DONT_RESOLVE_DLL_REFERENCES);
-
-						if (hDll != NULL)
-						{
-							FormatMessage(
-								FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
-								hDll,
-								dwError,
-								MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
-								(PTSTR)& hlocal,
-								0,
-								NULL);
-							FreeLibrary(hDll);
-						}
-					}
-
-					if (hlocal != NULL)
-					{
-						SetDlgItemText(hwndDlg, IDC_EDIT3, (PCTSTR)LocalLock(hlocal));
-						LocalFree(hlocal);
-					}
-					else
-					{
-						SetDlgItemText(hwndDlg, IDC_EDIT3, TEXT("Error number not found."));
-					}
-					break;
-				}	
+			if (hlocal != NULL)
+			{
+				SetDlgItemText(hwndDlg, IDC_EDIT3, (PCTSTR)LocalLock(hlocal));
+				LocalFree(hlocal);
+			}
+			else
+			{
+				SetDlgItemText(hwndDlg, IDC_EDIT3, TEXT("Error number not found."));
 			}
 			break;
 		}
+		}
+		break;
+	}
 	}
 	return FALSE;
 }
@@ -98,5 +98,5 @@ BOOL WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdSho
 		}
 	}
 
-    return (int)uMsg.wParam;
+	return (int)uMsg.wParam;
 }
