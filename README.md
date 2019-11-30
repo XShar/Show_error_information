@@ -14,4 +14,6 @@
 
 Также можете глянуть способ создания окна, он тоже немного необычный, но в целом удобно...)))
 
+Собранная версия программы тут:\Release\error_show.exe
+
 Добро пожаловать в новый раздел:https://ru-sfera.org/forums/sistemnoe-programmirovanie-i-razrabotka.160/
